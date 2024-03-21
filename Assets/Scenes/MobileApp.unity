@@ -1934,7 +1934,6 @@ MonoBehaviour:
   showBlowfishesToggle: {fileID: 721408562}
   startExperienceButton: {fileID: 1005511843}
   endExperienceButton: {fileID: 37518234}
-  restartExperienceButton: {fileID: 1612795589}
 --- !u!114 &1252319011
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3195,7 +3194,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3abe731070fa1884f979daaacf76bf44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  localRoomName: Test_1
+  localRoomName: test
 --- !u!114 &1632585091
 MonoBehaviour:
   m_ObjectHideFlags: 0
