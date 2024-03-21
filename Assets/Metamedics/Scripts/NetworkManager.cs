@@ -264,4 +264,9 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     {
         return !IsConnected() || IsMasterClient();
     }
+
+    public int GetPlayersNumber()
+    {
+        return PhotonNetwork.PlayerList.Length;
+    }
 }

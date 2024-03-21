@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -58,8 +59,8 @@ public class SedationController : MonoBehaviour
 
         showSeahorsesToggle.gameObject.SetActive(false);
         showBlowfishesToggle.gameObject.SetActive(false);
-        seahorsesTimes = PlayerPrefs.GetInt(seahorsesShowKey, 5);
-        blowfishesTimes = PlayerPrefs.GetInt(blowfishesShowKey, 5);
+        seahorsesTimes = PlayerPrefs.GetInt(seahorsesTimesKey, 5);
+        blowfishesTimes = PlayerPrefs.GetInt(blowfishesTimesKey, 5);
         showSeahorsesToggle.gameObject.SetActive(true);
         showBlowfishesToggle.gameObject.SetActive(true);
 
@@ -70,6 +71,22 @@ public class SedationController : MonoBehaviour
         else
         {
             OpenSetup();
+        }
+        //NetworkManager.GetInstance().EventJoinRoom += Joined;
+    }
+
+    private bool joined;
+
+    private void Joined()
+    {
+        joined = true;
+    }
+
+    private void FixedUpdate()
+    {
+        if (joined)
+        {
+            connectingStatusText.text = "Room name: " + NetworkManager.GetInstance().localRoomName + ", Total players: " + NetworkManager.GetInstance().GetPlayersNumber();
         }
     }
 
@@ -86,9 +103,12 @@ public class SedationController : MonoBehaviour
         if (roomNameText.text != "")
         {
             NetworkManager.GetInstance().localRoomName = roomNameText.text;
-            PlayerPrefs.SetString(NetworkManager.localRoomNameKey, roomNameText.text);
-            PlayerPrefs.SetInt(seahorsesTimesKey, int.Parse(seahorsesTimesText.text));
-            PlayerPrefs.SetInt(blowfishesTimesKey, int.Parse(blowfishesTimesText.text));
+            string fixedRoomName = Regex.Replace(roomNameText.text, @"[^a-zA-Z0-9]", "");
+            PlayerPrefs.SetString(NetworkManager.localRoomNameKey, fixedRoomName);
+            string fixedSeahorseTimes = Regex.Replace(seahorsesTimesText.text, @"[^0-9]", "");
+            PlayerPrefs.SetInt(seahorsesTimesKey, seahorsesTimesText.text == "" ? 0 : int.Parse(fixedSeahorseTimes));
+            string fixedBlowfishesTimes = Regex.Replace(blowfishesTimesText.text, @"[^0-9]", "");
+            PlayerPrefs.SetInt(blowfishesTimesKey, blowfishesTimesText.text == "" ? 0 : int.Parse(fixedBlowfishesTimes));
         }
         OpenConnecting();
     }
@@ -102,6 +122,7 @@ public class SedationController : MonoBehaviour
 
     private void UpdateConnectingStatusText(string s)
     {
+        print(s);
         connectingStatusText.text = s;
     }
 
