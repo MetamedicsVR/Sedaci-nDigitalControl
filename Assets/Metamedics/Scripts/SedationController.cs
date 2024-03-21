@@ -70,9 +70,9 @@ public class SedationController : MonoBehaviour
 
     private void OpenSetup()
     {
+        roomNameText.text = NetworkManager.GetInstance().localRoomName;
         seahorsesTimesText.text = seahorsesTimes.ToString();
         blowfishesTimesText.text = blowfishesTimes.ToString();
-        seahorsesTimesText.text = NetworkManager.GetInstance().localRoomName;
         OpenView(View.Setup);
     }
 
@@ -82,8 +82,8 @@ public class SedationController : MonoBehaviour
         {
             NetworkManager.GetInstance().localRoomName = roomNameText.text;
             PlayerPrefs.SetString(NetworkManager.localRoomNameKey, roomNameText.text);
-            PlayerPrefs.SetInt(seahorsesShowKey, int.Parse(seahorsesTimesText.text));
-            PlayerPrefs.SetInt(seahorsesShowKey, int.Parse(seahorsesTimesText.text));
+            PlayerPrefs.SetInt(seahorsesTimesKey, int.Parse(seahorsesTimesText.text));
+            PlayerPrefs.SetInt(blowfishesTimesKey, int.Parse(blowfishesTimesText.text));
         }
         OpenConnecting();
     }
@@ -126,7 +126,7 @@ public class SedationController : MonoBehaviour
         showSeahorses = PlayerPrefs.GetInt(seahorsesShowKey, 1) == 1;
         showBlowfishes = PlayerPrefs.GetInt(blowfishesShowKey, 1) == 1;
         showSeahorsesToggle.isOn = showSeahorses;
-        showSeahorsesToggle.isOn = showBlowfishes;
+        showBlowfishesToggle.isOn = showBlowfishes;
         OpenView(View.Playing);
     }
 
