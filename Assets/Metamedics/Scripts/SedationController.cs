@@ -168,7 +168,7 @@ public class SedationController : MonoBehaviour
 
     public void StartExperience()
     {
-        ExperienceConnector.GetInstance().StartExperience(showSeahorses, showBlowfishes);
+        ExperienceConnector.GetInstance().StartExperience(showSeahorses ? seahorsesTimes : 0, showBlowfishes ? blowfishesTimes : 0);
     }
 
     public void EndExperience()

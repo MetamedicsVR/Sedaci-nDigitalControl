@@ -6,7 +6,7 @@ using UnityEngine.Events;
 
 public class ExperienceConnector : MonoBehaviourInstance<ExperienceConnector>
 {
-    public delegate void DelegateStartExperience(bool showSeaHorses, bool showBlowfishes);
+    public delegate void DelegateStartExperience(int seahorsesTimes, int blowfishesTimes);
     public event DelegateStartExperience StartExperienceEvent;
     public delegate void DelegateEndExperience();
     public event DelegateEndExperience EndExperienceEvent;
@@ -24,15 +24,15 @@ public class ExperienceConnector : MonoBehaviourInstance<ExperienceConnector>
     }
 
 
-    public void StartExperience(bool showSeaHorses, bool showBlowfishes)
+    public void StartExperience(int seahorsesTimes, int blowfishesTimes)
     {
-        NetworkManager.GetInstance().RPC(this, nameof(RPCStartExperience), showSeaHorses, showBlowfishes);
+        NetworkManager.GetInstance().RPC(this, nameof(RPCStartExperience), seahorsesTimes, blowfishesTimes);
     }
 
     [PunRPC]
-    protected void RPCStartExperience(bool showSeaHorses, bool showBlowfishes)
+    protected void RPCStartExperience(int seahorsesTimes, int blowfishesTimes)
     {
-        StartExperienceEvent.Invoke(showSeaHorses, showBlowfishes);
+        StartExperienceEvent.Invoke(seahorsesTimes, blowfishesTimes);
     }
 
     public void EndExperience()
