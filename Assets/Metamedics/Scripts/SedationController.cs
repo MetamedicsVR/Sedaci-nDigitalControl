@@ -161,7 +161,6 @@ public class SedationController : MonoBehaviour
         setupView.SetActive(false);
         connectingView.SetActive(false);
         playingView.SetActive(false);
-        endExperienceButton.gameObject.SetActive(false);
         switch (view)
         {
             case View.Setup:
@@ -171,7 +170,7 @@ public class SedationController : MonoBehaviour
                 connectingView.SetActive(true);
                 break;
             case View.Playing:
-                endExperienceButton.gameObject.SetActive(false);
+                endExperienceButton.transform.parent.gameObject.SetActive(false);
                 playingView.SetActive(true);
                 break;
         }
@@ -193,7 +192,7 @@ public class SedationController : MonoBehaviour
     public void StartExperience()
     {
         ExperienceConnector.GetInstance().StartExperience(showSeahorses ? seahorsesTimes : 0, showBlowfishes ? blowfishesTimes : 0);
-        endExperienceButton.gameObject.SetActive(true);
+        endExperienceButton.transform.parent.gameObject.SetActive(true);
     }
 
     public void EndExperience()
