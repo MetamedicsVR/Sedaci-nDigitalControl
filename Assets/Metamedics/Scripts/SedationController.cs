@@ -32,7 +32,6 @@ public class SedationController : MonoBehaviour
     public Toggle showBlowfishesToggle;
     public Button startExperienceButton;
     public Button endExperienceButton;
-    public Button restartExperienceButton;
 
     private bool showSeahorses;
     private bool showBlowfishes;
@@ -56,8 +55,14 @@ public class SedationController : MonoBehaviour
         NetworkManager.GetInstance().EventOtherEnteredRoom += OpenPlaying;
         NetworkManager.GetInstance().EventCreateRoomFailed += () => RetryCreateOrJoin("Room creation failed");
         NetworkManager.GetInstance().EventJoinRoomFailed += () => RetryCreateOrJoin("Room join failed");
+
+        showSeahorsesToggle.gameObject.SetActive(false);
+        showBlowfishesToggle.gameObject.SetActive(false);
         seahorsesTimes = PlayerPrefs.GetInt(seahorsesShowKey, 5);
         blowfishesTimes = PlayerPrefs.GetInt(blowfishesShowKey, 5);
+        showSeahorsesToggle.gameObject.SetActive(true);
+        showBlowfishesToggle.gameObject.SetActive(true);
+
         if (NetworkManager.GetInstance().localRoomName != "")
         {
             OpenConnecting();
@@ -135,8 +140,7 @@ public class SedationController : MonoBehaviour
         setupView.SetActive(false);
         connectingView.SetActive(false);
         playingView.SetActive(false);
-        showSeahorsesToggle.gameObject.SetActive(false);
-        showBlowfishesToggle.gameObject.SetActive(false);
+        endExperienceButton.gameObject.SetActive(false);
         switch (view)
         {
             case View.Setup:
@@ -146,9 +150,8 @@ public class SedationController : MonoBehaviour
                 connectingView.SetActive(true);
                 break;
             case View.Playing:
+                endExperienceButton.gameObject.SetActive(false);
                 playingView.SetActive(true);
-                showSeahorsesToggle.gameObject.SetActive(true);
-                showBlowfishesToggle.gameObject.SetActive(true);
                 break;
         }
     }
@@ -169,15 +172,11 @@ public class SedationController : MonoBehaviour
     public void StartExperience()
     {
         ExperienceConnector.GetInstance().StartExperience(showSeahorses ? seahorsesTimes : 0, showBlowfishes ? blowfishesTimes : 0);
+        endExperienceButton.gameObject.SetActive(true);
     }
 
     public void EndExperience()
     {
         ExperienceConnector.GetInstance().EndExperience();
-    }
-
-    public void RestartExperience()
-    {
-        ExperienceConnector.GetInstance().RestartExperience();
     }
 }
