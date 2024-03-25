@@ -9,15 +9,15 @@ public class SedationController : MonoBehaviour
 {
     [Header("Setup")]
     public GameObject setupView;
-    public TextMeshProUGUI roomNameText;
-    public TextMeshProUGUI seahorsesTimesText;
-    public TextMeshProUGUI blowfishesTimesText;
+    public TMP_InputField roomNameText;
+    public TMP_InputField seahorsesTimesText;
+    public TMP_InputField blowfishesTimesText;
     public Button confirmButton;
 
     private int seahorsesTimes;
     private int blowfishesTimes;
-    private int defaultSeahorsesTimes;
-    private int defaultBlowfishTimes;
+    private const int defaultSeahorsesTimes = 5;
+    private const int defaultBlowfishTimes = 5;
     public const string seahorsesTimesKey = "KEY_SEAHORSES_TIMES";
     public const string blowfishesTimesKey = "KEY_BLOWFISH_TIMES";
 
@@ -42,6 +42,8 @@ public class SedationController : MonoBehaviour
     public const string seahorsesShowKey = "KEY_SEAHORSES_SHOW";
     public const string blowfishesShowKey = "KEY_BLOWFISH_SHOW";
 
+    public List<float> settingsButtonPressed = new List<float>();
+
     private enum View
     {
         Setup,
@@ -62,8 +64,8 @@ public class SedationController : MonoBehaviour
 
         showSeahorsesToggle.gameObject.SetActive(false);
         showBlowfishesToggle.gameObject.SetActive(false);
-        seahorsesTimes = PlayerPrefs.GetInt(seahorsesTimesKey, 5);
-        blowfishesTimes = PlayerPrefs.GetInt(blowfishesTimesKey, 5);
+        seahorsesTimes = PlayerPrefs.GetInt(seahorsesTimesKey, defaultSeahorsesTimes);
+        blowfishesTimes = PlayerPrefs.GetInt(blowfishesTimesKey, defaultBlowfishTimes);
         showSeahorsesToggle.gameObject.SetActive(true);
         showBlowfishesToggle.gameObject.SetActive(true);
 
@@ -75,27 +77,18 @@ public class SedationController : MonoBehaviour
         {
             OpenSetup();
         }
-        //NetworkManager.GetInstance().EventJoinRoom += Joined;
-    }
-
-    private bool joined;
-
-    private void Joined()
-    {
-        joined = true;
-    }
-
-    private void FixedUpdate()
-    {
-        if (joined)
-        {
-            connectingStatusText.text = "Room name: " + NetworkManager.GetInstance().localRoomName + ", Total players: " + NetworkManager.GetInstance().GetPlayersNumber();
-        }
     }
 
     private void OpenSetup()
     {
-        roomNameText.text = NetworkManager.GetInstance().localRoomName;
+        if (NetworkManager.GetInstance().localRoomName != "")
+        {
+            roomNameText.text = NetworkManager.GetInstance().localRoomName;
+        }
+        else
+        {
+            roomNameText.text = "test";
+        }
         seahorsesTimesText.text = seahorsesTimes.ToString();
         blowfishesTimesText.text = blowfishesTimes.ToString();
         OpenView(View.Setup);
@@ -109,9 +102,9 @@ public class SedationController : MonoBehaviour
             string fixedRoomName = Regex.Replace(roomNameText.text, @"[^a-zA-Z0-9]", "");
             PlayerPrefs.SetString(NetworkManager.localRoomNameKey, fixedRoomName);
             string fixedSeahorseTimes = Regex.Replace(seahorsesTimesText.text, @"[^0-9]", "");
-            PlayerPrefs.SetInt(seahorsesTimesKey, seahorsesTimesText.text == "" ? 0 : int.Parse(fixedSeahorseTimes));
+            PlayerPrefs.SetInt(seahorsesTimesKey, fixedSeahorseTimes == "" ? 0 : int.Parse(fixedSeahorseTimes));
             string fixedBlowfishesTimes = Regex.Replace(blowfishesTimesText.text, @"[^0-9]", "");
-            PlayerPrefs.SetInt(blowfishesTimesKey, blowfishesTimesText.text == "" ? 0 : int.Parse(fixedBlowfishesTimes));
+            PlayerPrefs.SetInt(blowfishesTimesKey, fixedBlowfishesTimes == "" ? 0 : int.Parse(fixedBlowfishesTimes));
         }
         OpenConnecting();
     }
@@ -174,7 +167,7 @@ public class SedationController : MonoBehaviour
                 break;
             case View.Playing:
                 endExperienceButton.transform.parent.gameObject.SetActive(false);
-                distractionButton.transform.parent.parent.gameObject.SetActive(false);
+                distractionButton.transform.parent.gameObject.SetActive(false);
                 playingView.SetActive(true);
                 break;
         }
@@ -204,7 +197,7 @@ public class SedationController : MonoBehaviour
     {
         ExperienceConnector.GetInstance().StartExperience(showSeahorses ? seahorsesTimes : 0, showBlowfishes ? blowfishesTimes : 0, GetSelectedLanguage());
         startExperienceButton.transform.parent.gameObject.SetActive(false);
-        distractionButton.transform.parent.parent.gameObject.SetActive(true);
+        distractionButton.transform.parent.gameObject.SetActive(true);
         endExperienceButton.transform.parent.gameObject.SetActive(true);
     }
 
@@ -218,5 +211,32 @@ public class SedationController : MonoBehaviour
         ExperienceConnector.GetInstance().EndExperience();
     }
 
+    public void SettingsButtonPressed()
+    {
+        if (playingView.activeSelf)
+        {
+            settingsButtonPressed.Add(Time.time);
+        }
+    }
 
+    private void Update()
+    {
+        if (playingView.activeSelf)
+        {
+            CheckSettingsButton();
+        }
+    }
+
+    private void CheckSettingsButton()
+    {
+        while (settingsButtonPressed.Count > 0 && Time.time - settingsButtonPressed[0] > 4)
+        {
+            settingsButtonPressed.RemoveAt(0);
+        }
+        if (settingsButtonPressed.Count >= 10)
+        {
+            settingsButtonPressed = new List<float>();
+            OpenView(View.Setup);
+        }
+    }
 }
