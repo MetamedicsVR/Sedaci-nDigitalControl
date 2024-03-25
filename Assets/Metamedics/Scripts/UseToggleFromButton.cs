@@ -8,15 +8,22 @@ public class UseToggleFromButton : MonoBehaviour
     public Toggle toggle;
 
     public Color colorToggleOn;
-
     public Color colorToggleOff;
 
-    // Este método se asignará al evento "onClick" del botón en el editor de Unity
+    private void Start()
+    {
+        toggle.onValueChanged.AddListener(UpdateColor);
+        UpdateColor(toggle.isOn);
+    }
+
     public void CambiarValorToggle()
     {
-        // Verificar si el toggle está activo o no y cambiar su valor
         toggle.isOn = !toggle.isOn;
-        if (toggle.isOn)
+    }
+
+    public void UpdateColor(bool isOn)
+    {
+        if (isOn)
         {
             toggle.targetGraphic.color = colorToggleOn;
         }

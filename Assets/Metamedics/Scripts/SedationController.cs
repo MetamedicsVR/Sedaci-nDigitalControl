@@ -31,7 +31,10 @@ public class SedationController : MonoBehaviour
     public GameObject playingView;
     public Toggle showSeahorsesToggle;
     public Toggle showBlowfishesToggle;
+    public Toggle spanishToggle;
+    public Toggle englishToggle;
     public Button startExperienceButton;
+    public Button distractionButton;
     public Button endExperienceButton;
 
     private bool showSeahorses;
@@ -171,6 +174,7 @@ public class SedationController : MonoBehaviour
                 break;
             case View.Playing:
                 endExperienceButton.transform.parent.gameObject.SetActive(false);
+                distractionButton.transform.parent.parent.gameObject.SetActive(false);
                 playingView.SetActive(true);
                 break;
         }
@@ -189,14 +193,30 @@ public class SedationController : MonoBehaviour
         PlayerPrefs.SetInt(blowfishesShowKey, showBlowfishes ? 1 : 0);
     }
 
+    public LanguageManager.Language GetSelectedLanguage()
+    {
+        if (spanishToggle.isOn) return LanguageManager.Language.Spanish;
+        if (englishToggle.isOn) return LanguageManager.Language.English;
+        return LanguageManager.GetInstance().GetCurrentLanguage();
+    }
+
     public void StartExperience()
     {
-        ExperienceConnector.GetInstance().StartExperience(showSeahorses ? seahorsesTimes : 0, showBlowfishes ? blowfishesTimes : 0);
+        ExperienceConnector.GetInstance().StartExperience(showSeahorses ? seahorsesTimes : 0, showBlowfishes ? blowfishesTimes : 0, GetSelectedLanguage());
+        startExperienceButton.transform.parent.gameObject.SetActive(false);
+        distractionButton.transform.parent.parent.gameObject.SetActive(true);
         endExperienceButton.transform.parent.gameObject.SetActive(true);
+    }
+
+    public void Distraction()
+    {
+        ExperienceConnector.GetInstance().Distraction();
     }
 
     public void EndExperience()
     {
         ExperienceConnector.GetInstance().EndExperience();
     }
+
+
 }
