@@ -42,7 +42,7 @@ public class SedationController : MonoBehaviour
     public const string seahorsesShowKey = "KEY_SEAHORSES_SHOW";
     public const string blowfishesShowKey = "KEY_BLOWFISH_SHOW";
 
-    public List<float> settingsButtonPressed = new List<float>();
+    private List<float> settingsButtonPressed = new List<float>();
 
     private enum View
     {
