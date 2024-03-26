@@ -208,6 +208,8 @@ public class SedationController : MonoBehaviour
 
     public void EndExperience()
     {
+        distractionButton.transform.parent.gameObject.SetActive(false);
+        endExperienceButton.transform.parent.gameObject.SetActive(false);
         ExperienceConnector.GetInstance().EndExperience();
     }
 
