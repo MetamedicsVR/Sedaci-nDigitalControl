@@ -19,14 +19,16 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public event DelegateJoinRoom EventJoinRoom;
     public delegate void DelegateJoinRoomFailed();
     public event DelegateJoinRoomFailed EventJoinRoomFailed;
+    public delegate void DelegateLeftRoom();
+    public event DelegateLeftRoom EventLeftRoom;
     public delegate void DelegateCreatedRoom(string roomName);
     public event DelegateCreatedRoom EventCreatedRoom;
     public delegate void DelegateCreateRoomFailed();
     public event DelegateCreateRoomFailed EventCreateRoomFailed;
-    public delegate void DelegateEnteredRoom();
-    public event DelegateEnteredRoom EventOtherEnteredRoom;
-    public delegate void DelegateLeftRoom();
-    public event DelegateLeftRoom EventOtherLeftRoom;
+    public delegate void DelegateOtherEnteredRoom();
+    public event DelegateOtherEnteredRoom EventOtherEnteredRoom;
+    public delegate void DelegateOtherLeftRoom();
+    public event DelegateOtherLeftRoom EventOtherLeftRoom;
 
     public const string localRoomNameKey = "KEY_LOCALROOMNAME";
     private List<string> roomNames = new List<string>();
@@ -114,34 +116,17 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     {
         if (PhotonNetwork.IsConnected)
         {
-            if (PhotonNetwork.InLobby)
-            {
-                if (PhotonNetwork.InRoom)
-                {
-                    PhotonNetwork.LeaveRoom();
-                }
-                else
-                {
-                    PhotonNetwork.LeaveLobby();
-                }
-            }
-            else
-            {
-                PhotonNetwork.Disconnect();
-            }
+            PhotonNetwork.Disconnect();
         }
     }
 
     public override void OnLeftRoom()
     {
         base.OnLeftRoom();
-        PhotonNetwork.LeaveLobby();
-    }
-
-    public override void OnLeftLobby()
-    {
-        base.OnLeftLobby();
-        PhotonNetwork.Disconnect();
+        if (EventLeftRoom != null)
+        {
+            EventLeftRoom.Invoke();
+        }
     }
 
     public override void OnMasterClientSwitched(Player newMasterClient)

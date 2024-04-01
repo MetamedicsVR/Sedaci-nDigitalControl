@@ -26,6 +26,7 @@ public class SedationController : MonoBehaviour
     public TextMeshProUGUI connectingStatusText;
 
     private bool gotRoomNames;
+    private string[] debugLines = new string[20];
 
     [Header("Playing")]
     public GameObject playingView;
@@ -61,6 +62,7 @@ public class SedationController : MonoBehaviour
         NetworkManager.GetInstance().EventOtherEnteredRoom += OpenPlaying;
         NetworkManager.GetInstance().EventCreateRoomFailed += () => RetryCreateOrJoin("Room creation failed");
         NetworkManager.GetInstance().EventJoinRoomFailed += () => RetryCreateOrJoin("Room join failed");
+        NetworkManager.GetInstance().EventLeftRoom += () => CreateOrJoinRoom();
 
         showSeahorsesToggle.gameObject.SetActive(false);
         showBlowfishesToggle.gameObject.SetActive(false);
@@ -113,13 +115,34 @@ public class SedationController : MonoBehaviour
     {
         OpenView(View.Connecting);
         connectingView.SetActive(true);
-        NetworkManager.GetInstance().Connect();
+        if (gotRoomNames)
+        {
+            NetworkManager.GetInstance().LeaveRoom();
+        }
+        else
+        {
+            NetworkManager.GetInstance().Connect();
+        }
+    }
+
+    public void Log(string message)
+    {
+        for (int i = debugLines.Length - 1; i > 0; i--)
+        {
+            debugLines[i] = debugLines[i - 1];
+        }
+        debugLines[0] = message;
+        string allLines = "";
+        for (int i = 0; i < debugLines.Length; i++)
+        {
+            allLines += debugLines[i] + "\r\n";
+        }
+        connectingStatusText.text = allLines;
     }
 
     private void UpdateConnectingStatusText(string s)
     {
-        print(s);
-        connectingStatusText.text = s;
+        Logger.GetInstance().Log(s);
     }
 
     private void GotRoomNames()
@@ -133,6 +156,7 @@ public class SedationController : MonoBehaviour
 
     private void CreateOrJoinRoom()
     {
+        Logger.GetInstance().Log("Room: " + NetworkManager.GetInstance().localRoomName);
         UpdateConnectingStatusText("Joining");
         NetworkManager.GetInstance().CreateOrJoinRoom();
     }
@@ -238,7 +262,7 @@ public class SedationController : MonoBehaviour
         if (settingsButtonPressed.Count >= 10)
         {
             settingsButtonPressed = new List<float>();
-            OpenView(View.Setup);
+            OpenSetup();
         }
     }
 }
