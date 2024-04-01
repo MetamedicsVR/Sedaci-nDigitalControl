@@ -55,7 +55,7 @@ public class SedationController : MonoBehaviour
     private void Start()
     {
         NetworkManager.GetInstance().EventConnected += () => UpdateConnectingStatusText("Connected to server");
-        NetworkManager.GetInstance().EventJoinedLobby += () => UpdateConnectingStatusText("Connected to lobby");
+        NetworkManager.GetInstance().EventJoinedLobby += () => ConnectedToLobby();
         NetworkManager.GetInstance().EventRoomListUpdated += () => GotRoomNames();
         NetworkManager.GetInstance().EventCreatedRoom += (name) => UpdateConnectingStatusText("Waiting for headset");
         NetworkManager.GetInstance().EventJoinRoom += OpenPlaying;
@@ -143,6 +143,12 @@ public class SedationController : MonoBehaviour
     private void UpdateConnectingStatusText(string s)
     {
         Logger.GetInstance().Log(s);
+    }
+
+    private void ConnectedToLobby()
+    {
+        gotRoomNames = false;
+        UpdateConnectingStatusText("Connected to lobby");
     }
 
     private void GotRoomNames()
