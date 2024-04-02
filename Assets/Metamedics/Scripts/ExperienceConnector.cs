@@ -46,7 +46,7 @@ public class ExperienceConnector : MonoBehaviourInstance<ExperienceConnector>
     }
     public void Distraction()
     {
-        NetworkManager.GetInstance().RPC(this, nameof(Distraction));
+        NetworkManager.GetInstance().RPC(this, nameof(RPCDistraction));
     }
 
     [PunRPC]

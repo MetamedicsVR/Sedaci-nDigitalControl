@@ -62,7 +62,6 @@ public class SedationController : MonoBehaviour
         NetworkManager.GetInstance().EventOtherEnteredRoom += OpenPlaying;
         NetworkManager.GetInstance().EventCreateRoomFailed += () => RetryCreateOrJoin("Room creation failed");
         NetworkManager.GetInstance().EventJoinRoomFailed += () => RetryCreateOrJoin("Room join failed");
-        NetworkManager.GetInstance().EventLeftRoom += () => CreateOrJoinRoom();
 
         showSeahorsesToggle.gameObject.SetActive(false);
         showBlowfishesToggle.gameObject.SetActive(false);
@@ -175,6 +174,7 @@ public class SedationController : MonoBehaviour
 
     private void OpenPlaying()
     {
+        UpdateConnectingStatusText("Joined room " + NetworkManager.GetInstance().localRoomName);
         showSeahorses = PlayerPrefs.GetInt(seahorsesShowKey, 1) == 1;
         showBlowfishes = PlayerPrefs.GetInt(blowfishesShowKey, 1) == 1;
         showSeahorsesToggle.isOn = showSeahorses;
@@ -207,7 +207,6 @@ public class SedationController : MonoBehaviour
     {
         showSeahorses = b;
         PlayerPrefs.SetInt(seahorsesShowKey, showSeahorses ? 1 : 0);
-
     }
 
     public void ChangeShowBlowfishes(bool b)
