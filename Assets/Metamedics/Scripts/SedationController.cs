@@ -196,6 +196,7 @@ public class SedationController : MonoBehaviour
                 connectingView.SetActive(true);
                 break;
             case View.Playing:
+                startExperienceButton.transform.parent.gameObject.SetActive(true);
                 endExperienceButton.transform.parent.gameObject.SetActive(false);
                 distractionButton.transform.parent.gameObject.SetActive(false);
                 playingView.SetActive(true);
