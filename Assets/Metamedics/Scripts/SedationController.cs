@@ -227,7 +227,7 @@ public class SedationController : MonoBehaviour
     {
         ExperienceConnector.GetInstance().StartExperience(showSeahorses ? seahorsesTimes : 0, showBlowfishes ? blowfishesTimes : 0, GetSelectedLanguage());
         startExperienceButton.transform.parent.gameObject.SetActive(false);
-        distractionButton.transform.parent.gameObject.SetActive(true);
+        //distractionButton.transform.parent.gameObject.SetActive(true);
         endExperienceButton.transform.parent.gameObject.SetActive(true);
     }
 
