@@ -25,9 +25,9 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public event DelegateCreatedRoom EventCreatedRoom;
     public delegate void DelegateCreateRoomFailed();
     public event DelegateCreateRoomFailed EventCreateRoomFailed;
-    public delegate void DelegateOtherEnteredRoom();
+    public delegate void DelegateOtherEnteredRoom(Player player);
     public event DelegateOtherEnteredRoom EventOtherEnteredRoom;
-    public delegate void DelegateOtherLeftRoom();
+    public delegate void DelegateOtherLeftRoom(Player player);
     public event DelegateOtherLeftRoom EventOtherLeftRoom;
 
     public const string localRoomNameKey = "KEY_LOCALROOMNAME";
@@ -155,6 +155,11 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         }
     }
 
+    public bool RoomExist(string roomName)
+    {
+        return roomNames.Contains(roomName);
+    }
+
     public void CreateOrJoinRoom()
     {
         if (roomNames.Contains(localRoomName))
@@ -220,7 +225,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         base.OnPlayerEnteredRoom(newPlayer);
         if (EventOtherEnteredRoom != null)
         {
-            EventOtherEnteredRoom.Invoke();
+            EventOtherEnteredRoom.Invoke(newPlayer);
         }
     }
 
@@ -229,7 +234,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         base.OnPlayerLeftRoom(otherPlayer);
         if (EventOtherLeftRoom != null)
         {
-            EventOtherLeftRoom.Invoke();
+            EventOtherLeftRoom.Invoke(otherPlayer);
         }
     }
 
@@ -254,4 +259,38 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     {
         return PhotonNetwork.PlayerList.Length;
     }
+
+    public void GiveOwnership(Player player)
+    {
+        if (PhotonNetwork.IsMasterClient && PhotonNetwork.LocalPlayer != player)
+        {
+            PhotonNetwork.SetMasterClient(player);
+        }
+    }
+
+    public string CurrentRoomName()
+    {
+        if (PhotonNetwork.CurrentRoom != null)
+        {
+            return PhotonNetwork.CurrentRoom.Name;
+        }
+        return "";
+    }
+
+    public string Status()
+    {
+        return "Connected: " + PhotonNetwork.IsConnected + '\n'
+            + "InRoom: " + PhotonNetwork.InRoom + '\n'
+            + "Room: " + localRoomName + '\n'
+            + "Players: " + PhotonNetwork.PlayerList.Length;
+    }
+
+    /*
+
+    private void Update()
+    {
+        print(Status());
+    }
+
+    */
 }

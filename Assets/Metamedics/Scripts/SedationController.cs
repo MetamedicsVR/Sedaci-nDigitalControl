@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using TMPro;
@@ -55,13 +54,13 @@ public class SedationController : MonoBehaviour
     private void Start()
     {
         NetworkManager.GetInstance().EventConnected += () => UpdateConnectingStatusText("Connected to server");
-        NetworkManager.GetInstance().EventJoinedLobby += () => ConnectedToLobby();
-        NetworkManager.GetInstance().EventRoomListUpdated += () => GotRoomNames();
+        NetworkManager.GetInstance().EventJoinedLobby += ConnectedToLobby;
+        NetworkManager.GetInstance().EventRoomListUpdated += GotRoomNames;
         NetworkManager.GetInstance().EventCreatedRoom += (name) => UpdateConnectingStatusText("Waiting for headset");
         NetworkManager.GetInstance().EventJoinRoom += OpenPlaying;
-        NetworkManager.GetInstance().EventOtherEnteredRoom += OpenPlaying;
-        NetworkManager.GetInstance().EventCreateRoomFailed += () => RetryCreateOrJoin("Room creation failed");
-        NetworkManager.GetInstance().EventJoinRoomFailed += () => RetryCreateOrJoin("Room join failed");
+        NetworkManager.GetInstance().EventOtherEnteredRoom += GiveOwnership;
+        NetworkManager.GetInstance().EventJoinRoomFailed += () => RetryJoin("Room join failed");
+        ExperienceConnector.GetInstance().StatusInfo += StatusInfo;
 
         showSeahorsesToggle.gameObject.SetActive(false);
         showBlowfishesToggle.gameObject.SetActive(false);
@@ -69,6 +68,10 @@ public class SedationController : MonoBehaviour
         blowfishesTimes = PlayerPrefs.GetInt(blowfishesTimesKey, defaultBlowfishTimes);
         showSeahorsesToggle.gameObject.SetActive(true);
         showBlowfishesToggle.gameObject.SetActive(true);
+
+        startExperienceButton.transform.parent.gameObject.SetActive(false);
+        endExperienceButton.transform.parent.gameObject.SetActive(false);
+        distractionButton.transform.parent.gameObject.SetActive(false);
 
         if (NetworkManager.GetInstance().localRoomName != "")
         {
@@ -99,24 +102,39 @@ public class SedationController : MonoBehaviour
     {
         if (roomNameText.text != "")
         {
-            NetworkManager.GetInstance().localRoomName = roomNameText.text;
             string fixedRoomName = Regex.Replace(roomNameText.text, @"[^a-zA-Z0-9]", "");
+            NetworkManager.GetInstance().localRoomName = fixedRoomName;
             PlayerPrefs.SetString(NetworkManager.localRoomNameKey, fixedRoomName);
             string fixedSeahorseTimes = Regex.Replace(seahorsesTimesText.text, @"[^0-9]", "");
             PlayerPrefs.SetInt(seahorsesTimesKey, fixedSeahorseTimes == "" ? 0 : int.Parse(fixedSeahorseTimes));
             string fixedBlowfishesTimes = Regex.Replace(blowfishesTimesText.text, @"[^0-9]", "");
             PlayerPrefs.SetInt(blowfishesTimesKey, fixedBlowfishesTimes == "" ? 0 : int.Parse(fixedBlowfishesTimes));
         }
-        OpenConnecting();
+        if (NetworkManager.GetInstance().IsConnected() && gotRoomNames && NetworkManager.GetInstance().CurrentRoomName() != NetworkManager.GetInstance().localRoomName && NetworkManager.GetInstance().CurrentRoomName() != "")
+        {
+            NetworkManager.GetInstance().LeaveRoom();
+            startExperienceButton.transform.parent.gameObject.SetActive(false);
+            endExperienceButton.transform.parent.gameObject.SetActive(false);
+            distractionButton.transform.parent.gameObject.SetActive(false);
+            OpenConnecting();
+        }
+        else
+        {
+            OpenPlaying();
+        }
     }
 
     private void OpenConnecting()
     {
         OpenView(View.Connecting);
         connectingView.SetActive(true);
-        if (gotRoomNames)
+        if (NetworkManager.GetInstance().IsConnected())
         {
-            NetworkManager.GetInstance().LeaveRoom();
+            UpdateConnectingStatusText("Waiting for headset");
+            if (gotRoomNames)
+            {
+                JoinRoom();
+            }
         }
         else
         {
@@ -155,21 +173,35 @@ public class SedationController : MonoBehaviour
         if (!gotRoomNames)
         {
             gotRoomNames = true;
-            CreateOrJoinRoom();
+        }
+        if (NetworkManager.GetInstance().CurrentRoomName() == "")
+        {
+            JoinRoom();
         }
     }
 
-    private void CreateOrJoinRoom()
+    private void JoinRoom()
     {
-        Logger.GetInstance().Log("Room: " + NetworkManager.GetInstance().localRoomName);
-        UpdateConnectingStatusText("Joining");
-        NetworkManager.GetInstance().CreateOrJoinRoom();
+        if (NetworkManager.GetInstance().RoomExist(NetworkManager.GetInstance().localRoomName))
+        {
+            Logger.GetInstance().Log("Room: " + NetworkManager.GetInstance().localRoomName);
+            NetworkManager.GetInstance().JoinRoom(NetworkManager.GetInstance().localRoomName);
+        }
+        else
+        {
+            UpdateConnectingStatusText("Waiting for headset");
+        }
     }
 
-    private void RetryCreateOrJoin(string errorText)
+    private void RetryJoin(string errorText)
     {
         UpdateConnectingStatusText(errorText + ", trying in 5 seconds");
-        Invoke(nameof(CreateOrJoinRoom), 5);
+        Invoke(nameof(JoinRoom), 5);
+    }
+
+    private void GiveOwnership(Photon.Realtime.Player player)
+    {
+        NetworkManager.GetInstance().GiveOwnership(player);
     }
 
     private void OpenPlaying()
@@ -196,9 +228,6 @@ public class SedationController : MonoBehaviour
                 connectingView.SetActive(true);
                 break;
             case View.Playing:
-                startExperienceButton.transform.parent.gameObject.SetActive(true);
-                endExperienceButton.transform.parent.gameObject.SetActive(false);
-                distractionButton.transform.parent.gameObject.SetActive(false);
                 playingView.SetActive(true);
                 break;
         }
@@ -269,6 +298,19 @@ public class SedationController : MonoBehaviour
         {
             settingsButtonPressed = new List<float>();
             OpenSetup();
+        }
+    }
+
+    private void StatusInfo(ExperienceConnector.ExperienceStatus experienceStatus)
+    {
+        if (experienceStatus == ExperienceConnector.ExperienceStatus.NotStarted)
+        {
+            startExperienceButton.transform.parent.gameObject.SetActive(true);
+        }
+        else
+        {
+            //endExperienceButton.transform.parent.gameObject.SetActive(true);
+            distractionButton.transform.parent.gameObject.SetActive(true);
         }
     }
 }

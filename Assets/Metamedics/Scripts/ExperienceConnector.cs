@@ -12,15 +12,16 @@ public class ExperienceConnector : MonoBehaviourInstance<ExperienceConnector>
     public event DelegateEndExperience EndExperienceEvent;
     public delegate void DelegateDistraction();
     public event DelegateDistraction DistractionEvent;
+    public delegate void DelegateStatus(ExperienceStatus n);
+    public event DelegateStatus StatusInfo;
 
-    private void CreateOrJoinRoom()
+    public enum ExperienceStatus
     {
-        NetworkManager.GetInstance().CreateOrJoinRoom();
-    }
-
-    private void RetryCreateOrJoin()
-    {
-        Invoke(nameof(CreateOrJoinRoom), 5);
+        NotStarted,
+        Starting,
+        Started,
+        Ending,
+        Ended
     }
 
     public void StartExperience(int seahorsesTimes, int blowfishesTimes, LanguageManager.Language language)
@@ -44,6 +45,7 @@ public class ExperienceConnector : MonoBehaviourInstance<ExperienceConnector>
     {
         EndExperienceEvent.Invoke();
     }
+
     public void Distraction()
     {
         NetworkManager.GetInstance().RPC(this, nameof(RPCDistraction));
@@ -53,5 +55,16 @@ public class ExperienceConnector : MonoBehaviourInstance<ExperienceConnector>
     protected void RPCDistraction()
     {
         DistractionEvent.Invoke();
+    }
+
+    public void Status(ExperienceStatus status)
+    {
+        NetworkManager.GetInstance().RPC(this, nameof(RPCStatus), (int)status);
+    }
+
+    [PunRPC]
+    protected void RPCStatus(int n)
+    {
+        StatusInfo.Invoke((ExperienceStatus)n);
     }
 }
