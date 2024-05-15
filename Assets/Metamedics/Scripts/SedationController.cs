@@ -58,8 +58,7 @@ public class SedationController : MonoBehaviour
         NetworkManager.GetInstance().EventRoomListUpdated += GotRoomNames;
         NetworkManager.GetInstance().EventCreatedRoom += (name) => UpdateConnectingStatusText("Waiting for headset");
         NetworkManager.GetInstance().EventJoinRoom += OpenPlaying;
-        NetworkManager.GetInstance().EventOtherEnteredRoom += GiveOwnership;
-        NetworkManager.GetInstance().EventJoinRoomFailed += () => RetryJoin("Room join failed");
+        NetworkManager.GetInstance().EventLeftRoom += LeftRoom;
         ExperienceConnector.GetInstance().StatusInfo += StatusInfo;
 
         showSeahorsesToggle.gameObject.SetActive(false);
@@ -110,17 +109,24 @@ public class SedationController : MonoBehaviour
             string fixedBlowfishesTimes = Regex.Replace(blowfishesTimesText.text, @"[^0-9]", "");
             PlayerPrefs.SetInt(blowfishesTimesKey, fixedBlowfishesTimes == "" ? 0 : int.Parse(fixedBlowfishesTimes));
         }
-        if (NetworkManager.GetInstance().IsConnected() && gotRoomNames && NetworkManager.GetInstance().CurrentRoomName() != NetworkManager.GetInstance().localRoomName && NetworkManager.GetInstance().CurrentRoomName() != "")
+        if (NetworkManager.GetInstance().IsConnected() && gotRoomNames)
         {
-            NetworkManager.GetInstance().LeaveRoom();
-            startExperienceButton.transform.parent.gameObject.SetActive(false);
-            endExperienceButton.transform.parent.gameObject.SetActive(false);
-            distractionButton.transform.parent.gameObject.SetActive(false);
-            OpenConnecting();
+            if (NetworkManager.GetInstance().CurrentRoomName() == NetworkManager.GetInstance().localRoomName && NetworkManager.GetInstance().localRoomName != "")
+            {
+                OpenPlaying();
+            }
+            else
+            {
+                NetworkManager.GetInstance().LeaveRoom();
+                startExperienceButton.transform.parent.gameObject.SetActive(false);
+                endExperienceButton.transform.parent.gameObject.SetActive(false);
+                distractionButton.transform.parent.gameObject.SetActive(false);
+                OpenConnecting();
+            }
         }
         else
         {
-            OpenPlaying();
+            OpenConnecting();
         }
     }
 
@@ -130,7 +136,6 @@ public class SedationController : MonoBehaviour
         connectingView.SetActive(true);
         if (NetworkManager.GetInstance().IsConnected())
         {
-            UpdateConnectingStatusText("Waiting for headset");
             if (gotRoomNames)
             {
                 JoinRoom();
@@ -199,9 +204,12 @@ public class SedationController : MonoBehaviour
         Invoke(nameof(JoinRoom), 5);
     }
 
-    private void GiveOwnership(Photon.Realtime.Player player)
+    private void LeftRoom()
     {
-        NetworkManager.GetInstance().GiveOwnership(player);
+        if (playingView.activeSelf)
+        {
+            OpenConnecting();
+        }
     }
 
     private void OpenPlaying()
@@ -274,7 +282,7 @@ public class SedationController : MonoBehaviour
 
     public void SettingsButtonPressed()
     {
-        if (playingView.activeSelf)
+        if (!setupView.activeSelf)
         {
             settingsButtonPressed.Add(Time.time);
         }
@@ -282,7 +290,7 @@ public class SedationController : MonoBehaviour
 
     private void Update()
     {
-        if (playingView.activeSelf)
+        if (!setupView.activeSelf)
         {
             CheckSettingsButton();
         }
@@ -309,8 +317,8 @@ public class SedationController : MonoBehaviour
         }
         else
         {
-            //endExperienceButton.transform.parent.gameObject.SetActive(true);
-            distractionButton.transform.parent.gameObject.SetActive(true);
+            endExperienceButton.transform.parent.gameObject.SetActive(true);
+            //distractionButton.transform.parent.gameObject.SetActive(true);
         }
     }
 }
