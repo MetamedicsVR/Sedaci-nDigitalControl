@@ -68,6 +68,8 @@ public class SedationController : MonoBehaviour
         showSeahorsesToggle.gameObject.SetActive(true);
         showBlowfishesToggle.gameObject.SetActive(true);
 
+        showSeahorsesToggle.transform.parent.gameObject.SetActive(true);
+        showBlowfishesToggle.transform.parent.gameObject.SetActive(true);
         startExperienceButton.transform.parent.gameObject.SetActive(false);
         endExperienceButton.transform.parent.gameObject.SetActive(false);
         distractionButton.transform.parent.gameObject.SetActive(false);
@@ -118,6 +120,8 @@ public class SedationController : MonoBehaviour
             else
             {
                 NetworkManager.GetInstance().LeaveRoom();
+                showSeahorsesToggle.transform.parent.gameObject.SetActive(true);
+                showBlowfishesToggle.transform.parent.gameObject.SetActive(true);
                 startExperienceButton.transform.parent.gameObject.SetActive(false);
                 endExperienceButton.transform.parent.gameObject.SetActive(false);
                 distractionButton.transform.parent.gameObject.SetActive(false);
@@ -263,9 +267,6 @@ public class SedationController : MonoBehaviour
     public void StartExperience()
     {
         ExperienceConnector.GetInstance().StartExperience(showSeahorses ? seahorsesTimes : 0, showBlowfishes ? blowfishesTimes : 0, GetSelectedLanguage());
-        startExperienceButton.transform.parent.gameObject.SetActive(false);
-        //distractionButton.transform.parent.gameObject.SetActive(true);
-        endExperienceButton.transform.parent.gameObject.SetActive(true);
     }
 
     public void Distraction()
@@ -275,8 +276,6 @@ public class SedationController : MonoBehaviour
 
     public void EndExperience()
     {
-        distractionButton.transform.parent.gameObject.SetActive(false);
-        endExperienceButton.transform.parent.gameObject.SetActive(false);
         ExperienceConnector.GetInstance().EndExperience();
     }
 
@@ -311,14 +310,31 @@ public class SedationController : MonoBehaviour
 
     private void StatusInfo(ExperienceConnector.ExperienceStatus experienceStatus)
     {
-        if (experienceStatus == ExperienceConnector.ExperienceStatus.NotStarted)
+        switch (experienceStatus)
         {
-            startExperienceButton.transform.parent.gameObject.SetActive(true);
-        }
-        else
-        {
-            endExperienceButton.transform.parent.gameObject.SetActive(true);
-            //distractionButton.transform.parent.gameObject.SetActive(true);
+            case ExperienceConnector.ExperienceStatus.NotStarted:
+                showSeahorsesToggle.transform.parent.gameObject.SetActive(true);
+                showBlowfishesToggle.transform.parent.gameObject.SetActive(true);
+                startExperienceButton.transform.parent.gameObject.SetActive(true);
+                endExperienceButton.transform.parent.gameObject.SetActive(false);
+                //distractionButton.transform.parent.gameObject.SetActive(false);
+                break;
+            case ExperienceConnector.ExperienceStatus.Starting:
+            case ExperienceConnector.ExperienceStatus.Started:
+                showSeahorsesToggle.transform.parent.gameObject.SetActive(false);
+                showBlowfishesToggle.transform.parent.gameObject.SetActive(false);
+                startExperienceButton.transform.parent.gameObject.SetActive(false);
+                endExperienceButton.transform.parent.gameObject.SetActive(true);
+                //distractionButton.transform.parent.gameObject.SetActive(true);
+                break;
+            case ExperienceConnector.ExperienceStatus.Ending:
+            case ExperienceConnector.ExperienceStatus.Ended:
+                showSeahorsesToggle.transform.parent.gameObject.SetActive(false);
+                showBlowfishesToggle.transform.parent.gameObject.SetActive(false);
+                startExperienceButton.transform.parent.gameObject.SetActive(false);
+                endExperienceButton.transform.parent.gameObject.SetActive(false);
+                //distractionButton.transform.parent.gameObject.SetActive(false);
+                break;
         }
     }
 }
