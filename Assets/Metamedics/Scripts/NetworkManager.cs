@@ -13,6 +13,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public event DelegateDisconnected EventDisconnected;
     public delegate void DelegateJoinedLobby();
     public event DelegateJoinedLobby EventJoinedLobby;
+    public delegate void DelegateLeftLobby();
+    public event DelegateLeftLobby EventLeftLobby;
     public delegate void DelegateRoomListUpdated();
     public event DelegateRoomListUpdated EventRoomListUpdated;
     public delegate void DelegateJoinRoom();
@@ -84,6 +86,16 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         }
     }
 
+    public override void OnLeftLobby()
+    {
+        base.OnLeftLobby();
+        if (EventLeftLobby != null)
+        {
+            EventLeftLobby.Invoke();
+        }
+        PhotonNetwork.JoinLobby();
+    }
+
     public override void OnCreatedRoom()
     {
         base.OnCreatedRoom();
@@ -127,6 +139,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         {
             EventLeftRoom.Invoke();
         }
+        PhotonNetwork.JoinLobby();
     }
 
     public override void OnMasterClientSwitched(Player newMasterClient)
@@ -138,6 +151,16 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public bool IsConnected()
     {
         return PhotonNetwork.IsConnected;
+    }
+
+    public bool IsInLobby()
+    {
+        return PhotonNetwork.InLobby;
+    }
+
+    public bool IsInRoom()
+    {
+        return PhotonNetwork.InRoom;
     }
 
     public bool IsMasterClient()
@@ -277,20 +300,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         return "";
     }
 
-    public string Status()
+    public ClientState Status()
     {
-        return "Connected: " + PhotonNetwork.IsConnected + '\n'
-            + "InRoom: " + PhotonNetwork.InRoom + '\n'
-            + "Room: " + localRoomName + '\n'
-            + "Players: " + PhotonNetwork.PlayerList.Length;
+        return PhotonNetwork.NetworkClientState;
     }
-
-    /*
-
-    private void Update()
-    {
-        print(Status());
-    }
-
-    */
 }

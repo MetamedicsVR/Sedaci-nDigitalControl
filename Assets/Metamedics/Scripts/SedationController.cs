@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using TMPro;
@@ -24,6 +25,7 @@ public class SedationController : MonoBehaviour
     public GameObject connectingView;
     public TextMeshProUGUI connectingStatusText;
 
+    private Coroutine connecting;
     private bool gotRoomNames;
     private string[] debugLines = new string[20];
 
@@ -58,7 +60,9 @@ public class SedationController : MonoBehaviour
         NetworkManager.GetInstance().EventRoomListUpdated += GotRoomNames;
         NetworkManager.GetInstance().EventCreatedRoom += (name) => UpdateConnectingStatusText("Waiting for headset");
         NetworkManager.GetInstance().EventJoinRoom += OpenPlaying;
+        NetworkManager.GetInstance().EventJoinRoomFailed += Reconnect;
         NetworkManager.GetInstance().EventLeftRoom += LeftRoom;
+        NetworkManager.GetInstance().EventDisconnected += OpenConnecting;
         ExperienceConnector.GetInstance().StatusInfo += StatusInfo;
 
         showSeahorsesToggle.gameObject.SetActive(false);
@@ -67,12 +71,6 @@ public class SedationController : MonoBehaviour
         blowfishesTimes = PlayerPrefs.GetInt(blowfishesTimesKey, defaultBlowfishTimes);
         showSeahorsesToggle.gameObject.SetActive(true);
         showBlowfishesToggle.gameObject.SetActive(true);
-
-        showSeahorsesToggle.transform.parent.gameObject.SetActive(true);
-        showBlowfishesToggle.transform.parent.gameObject.SetActive(true);
-        startExperienceButton.transform.parent.gameObject.SetActive(false);
-        endExperienceButton.transform.parent.gameObject.SetActive(false);
-        distractionButton.transform.parent.gameObject.SetActive(false);
 
         if (NetworkManager.GetInstance().localRoomName != "")
         {
@@ -111,21 +109,15 @@ public class SedationController : MonoBehaviour
             string fixedBlowfishesTimes = Regex.Replace(blowfishesTimesText.text, @"[^0-9]", "");
             PlayerPrefs.SetInt(blowfishesTimesKey, fixedBlowfishesTimes == "" ? 0 : int.Parse(fixedBlowfishesTimes));
         }
-        if (NetworkManager.GetInstance().IsConnected() && gotRoomNames)
+        if (NetworkManager.GetInstance().IsInRoom())
         {
-            if (NetworkManager.GetInstance().CurrentRoomName() == NetworkManager.GetInstance().localRoomName && NetworkManager.GetInstance().localRoomName != "")
+            if (NetworkManager.GetInstance().CurrentRoomName() != NetworkManager.GetInstance().localRoomName)
             {
-                OpenPlaying();
+                NetworkManager.GetInstance().LeaveRoom();
             }
             else
             {
-                NetworkManager.GetInstance().LeaveRoom();
-                showSeahorsesToggle.transform.parent.gameObject.SetActive(true);
-                showBlowfishesToggle.transform.parent.gameObject.SetActive(true);
-                startExperienceButton.transform.parent.gameObject.SetActive(false);
-                endExperienceButton.transform.parent.gameObject.SetActive(false);
-                distractionButton.transform.parent.gameObject.SetActive(false);
-                OpenConnecting();
+                OpenPlaying();
             }
         }
         else
@@ -136,19 +128,42 @@ public class SedationController : MonoBehaviour
 
     private void OpenConnecting()
     {
+        showSeahorsesToggle.transform.parent.gameObject.SetActive(false);
+        showBlowfishesToggle.transform.parent.gameObject.SetActive(false);
+        startExperienceButton.transform.parent.gameObject.SetActive(false);
+        endExperienceButton.transform.parent.gameObject.SetActive(false);
+        distractionButton.transform.parent.gameObject.SetActive(false);
         OpenView(View.Connecting);
-        connectingView.SetActive(true);
         if (NetworkManager.GetInstance().IsConnected())
         {
-            if (gotRoomNames)
+            if (NetworkManager.GetInstance().IsInLobby() && gotRoomNames)
             {
                 JoinRoom();
             }
         }
         else
         {
-            NetworkManager.GetInstance().Connect();
+            if (connecting == null)
+            {
+                connecting = StartCoroutine(TryConnect());
+            }
         }
+    }
+
+    private IEnumerator TryConnect()
+    {
+        while (!NetworkManager.GetInstance().IsConnected())
+        {
+            if (Application.internetReachability == NetworkReachability.NotReachable)
+            {
+                UpdateConnectingStatusText("There is no internet connection");
+                yield return new WaitUntil(() => Application.internetReachability != NetworkReachability.NotReachable);
+            }
+            UpdateConnectingStatusText("Connecting");
+            NetworkManager.GetInstance().Connect();
+            yield return new WaitForSeconds(10);
+        }
+        connecting = null;
     }
 
     public void Log(string message)
@@ -179,11 +194,8 @@ public class SedationController : MonoBehaviour
 
     private void GotRoomNames()
     {
-        if (!gotRoomNames)
-        {
-            gotRoomNames = true;
-        }
-        if (NetworkManager.GetInstance().CurrentRoomName() == "")
+        gotRoomNames = true;
+        if (NetworkManager.GetInstance().IsInLobby())
         {
             JoinRoom();
         }
@@ -193,7 +205,8 @@ public class SedationController : MonoBehaviour
     {
         if (NetworkManager.GetInstance().RoomExist(NetworkManager.GetInstance().localRoomName))
         {
-            Logger.GetInstance().Log("Room: " + NetworkManager.GetInstance().localRoomName);
+            UpdateConnectingStatusText("Room: " + NetworkManager.GetInstance().localRoomName);
+            UpdateConnectingStatusText("Joining");
             NetworkManager.GetInstance().JoinRoom(NetworkManager.GetInstance().localRoomName);
         }
         else
@@ -202,14 +215,15 @@ public class SedationController : MonoBehaviour
         }
     }
 
-    private void RetryJoin(string errorText)
+    private void Reconnect()
     {
-        UpdateConnectingStatusText(errorText + ", trying in 5 seconds");
-        Invoke(nameof(JoinRoom), 5);
+        UpdateConnectingStatusText("Room joining failed, reconnecting");
+        NetworkManager.GetInstance().Disconnect();
     }
 
     private void LeftRoom()
     {
+        UpdateConnectingStatusText("Left room");
         if (playingView.activeSelf)
         {
             OpenConnecting();
