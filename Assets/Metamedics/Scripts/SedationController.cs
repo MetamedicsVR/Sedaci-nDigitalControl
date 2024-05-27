@@ -7,6 +7,9 @@ using UnityEngine.UI;
 
 public class SedationController : MonoBehaviour
 {
+    [Header("Disclaimer")]
+    public GameObject disclaimerView;
+
     [Header("Setup")]
     public GameObject setupView;
     public TMP_InputField roomNameText;
@@ -28,6 +31,7 @@ public class SedationController : MonoBehaviour
     private Coroutine connecting;
     private bool gotRoomNames;
     private string[] debugLines = new string[20];
+    private Color minimumColor = new Color(0.9f, 0.9f, 0.9f);
 
     [Header("Playing")]
     public GameObject playingView;
@@ -48,6 +52,7 @@ public class SedationController : MonoBehaviour
 
     private enum View
     {
+        Disclaimer,
         Setup,
         Connecting,
         Playing
@@ -55,10 +60,10 @@ public class SedationController : MonoBehaviour
 
     private void Start()
     {
-        NetworkManager.GetInstance().EventConnected += () => UpdateConnectingStatusText("Connected to server");
+        NetworkManager.GetInstance().EventConnected += () => UpdateConnectingStatusText("Conectado al servidor");
         NetworkManager.GetInstance().EventJoinedLobby += ConnectedToLobby;
         NetworkManager.GetInstance().EventRoomListUpdated += GotRoomNames;
-        NetworkManager.GetInstance().EventCreatedRoom += (name) => UpdateConnectingStatusText("Waiting for headset");
+        NetworkManager.GetInstance().EventCreatedRoom += (name) => UpdateConnectingStatusText("Esperando a las gafas");
         NetworkManager.GetInstance().EventJoinRoom += OpenPlaying;
         NetworkManager.GetInstance().EventJoinRoomFailed += Reconnect;
         NetworkManager.GetInstance().EventLeftRoom += LeftRoom;
@@ -72,6 +77,11 @@ public class SedationController : MonoBehaviour
         showSeahorsesToggle.gameObject.SetActive(true);
         showBlowfishesToggle.gameObject.SetActive(true);
 
+        OpenView(View.Disclaimer);
+    }
+
+    public void ConfirmDisclaimer()
+    {
         if (NetworkManager.GetInstance().localRoomName != "")
         {
             OpenConnecting();
@@ -156,10 +166,10 @@ public class SedationController : MonoBehaviour
         {
             if (Application.internetReachability == NetworkReachability.NotReachable)
             {
-                UpdateConnectingStatusText("There is no internet connection");
+                UpdateConnectingStatusText("No hay conexión a internet");
                 yield return new WaitUntil(() => Application.internetReachability != NetworkReachability.NotReachable);
             }
-            UpdateConnectingStatusText("Connecting");
+            UpdateConnectingStatusText("Conectando...");
             NetworkManager.GetInstance().Connect();
             yield return new WaitForSeconds(10);
         }
@@ -168,15 +178,20 @@ public class SedationController : MonoBehaviour
 
     public void Log(string message)
     {
+        int lastTextIndex = debugLines.Length - 1;
         for (int i = debugLines.Length - 1; i > 0; i--)
         {
             debugLines[i] = debugLines[i - 1];
+            if (debugLines[i] == null || debugLines[i] == "")
+            {
+                lastTextIndex = i;
+            }
         }
         debugLines[0] = message;
         string allLines = "";
         for (int i = 0; i < debugLines.Length; i++)
         {
-            allLines += debugLines[i] + "\r\n";
+            allLines += $"<color=#{ColorUtility.ToHtmlStringRGB(Color.Lerp(Color.black, minimumColor, ((float)i) / (lastTextIndex + 1)))}>" + debugLines[i] + "</color>\r\n";
         }
         connectingStatusText.text = allLines;
     }
@@ -189,7 +204,7 @@ public class SedationController : MonoBehaviour
     private void ConnectedToLobby()
     {
         gotRoomNames = false;
-        UpdateConnectingStatusText("Connected to lobby");
+        UpdateConnectingStatusText("Conectado al lobby");
     }
 
     private void GotRoomNames()
@@ -205,25 +220,25 @@ public class SedationController : MonoBehaviour
     {
         if (NetworkManager.GetInstance().RoomExist(NetworkManager.GetInstance().localRoomName))
         {
-            UpdateConnectingStatusText("Room: " + NetworkManager.GetInstance().localRoomName);
-            UpdateConnectingStatusText("Joining");
+            UpdateConnectingStatusText("Sala: " + NetworkManager.GetInstance().localRoomName);
+            UpdateConnectingStatusText("Entrando a la sala");
             NetworkManager.GetInstance().JoinRoom(NetworkManager.GetInstance().localRoomName);
         }
         else
         {
-            UpdateConnectingStatusText("Waiting for headset");
+            UpdateConnectingStatusText("Esperando a las gafas");
         }
     }
 
     private void Reconnect()
     {
-        UpdateConnectingStatusText("Room joining failed, reconnecting");
+        UpdateConnectingStatusText("Error entrando a la sala, reconectando...");
         NetworkManager.GetInstance().Disconnect();
     }
 
     private void LeftRoom()
     {
-        UpdateConnectingStatusText("Left room");
+        UpdateConnectingStatusText("Se abandonó la sala");
         if (playingView.activeSelf)
         {
             OpenConnecting();
@@ -232,7 +247,7 @@ public class SedationController : MonoBehaviour
 
     private void OpenPlaying()
     {
-        UpdateConnectingStatusText("Joined room " + NetworkManager.GetInstance().localRoomName);
+        UpdateConnectingStatusText("Se unió a la sala " + NetworkManager.GetInstance().localRoomName);
         showSeahorses = PlayerPrefs.GetInt(seahorsesShowKey, 1) == 1;
         showBlowfishes = PlayerPrefs.GetInt(blowfishesShowKey, 1) == 1;
         showSeahorsesToggle.isOn = showSeahorses;
@@ -242,11 +257,15 @@ public class SedationController : MonoBehaviour
 
     private void OpenView(View view)
     {
+        disclaimerView.SetActive(false);
         setupView.SetActive(false);
         connectingView.SetActive(false);
         playingView.SetActive(false);
         switch (view)
         {
+            case View.Disclaimer:
+                disclaimerView.SetActive(true);
+                break;
             case View.Setup:
                 setupView.SetActive(true);
                 break;
@@ -303,7 +322,7 @@ public class SedationController : MonoBehaviour
 
     private void Update()
     {
-        if (!setupView.activeSelf)
+        if (!setupView.activeSelf && !setupView.activeSelf)
         {
             CheckSettingsButton();
         }
