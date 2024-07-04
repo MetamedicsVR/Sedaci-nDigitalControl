@@ -35,6 +35,9 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public const string localRoomNameKey = "KEY_LOCALROOMNAME";
     private List<string> roomNames = new List<string>();
     public string localRoomName;
+#if UNITY_EDITOR
+    public string debugRoomName;
+#endif
 
     private static NetworkManager instance;
 
@@ -48,6 +51,12 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         {
             instance = this;
             localRoomName = PlayerPrefs.GetString(localRoomNameKey, "");
+#if UNITY_EDITOR
+            if (debugRoomName != "")
+            {
+                localRoomName = debugRoomName;
+            }
+#endif
         }
     }
 

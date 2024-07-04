@@ -40,7 +40,7 @@ public class SedationController : MonoBehaviour
     public Toggle spanishToggle;
     public Toggle englishToggle;
     public Button startExperienceButton;
-    public Button distractionButton;
+    public Button relocateButton;
     public Button endExperienceButton;
 
     private bool showSeahorses;
@@ -142,7 +142,7 @@ public class SedationController : MonoBehaviour
         showBlowfishesToggle.transform.parent.gameObject.SetActive(false);
         startExperienceButton.transform.parent.gameObject.SetActive(false);
         endExperienceButton.transform.parent.gameObject.SetActive(false);
-        distractionButton.transform.parent.gameObject.SetActive(false);
+        relocateButton.transform.parent.gameObject.SetActive(false);
         OpenView(View.Connecting);
         if (NetworkManager.GetInstance().IsConnected())
         {
@@ -302,9 +302,9 @@ public class SedationController : MonoBehaviour
         ExperienceConnector.GetInstance().StartExperience(showSeahorses ? seahorsesTimes : 0, showBlowfishes ? blowfishesTimes : 0, GetSelectedLanguage());
     }
 
-    public void Distraction()
+    public void Relocate()
     {
-        ExperienceConnector.GetInstance().Distraction();
+        ExperienceConnector.GetInstance().Relocate();
     }
 
     public void EndExperience()
@@ -350,7 +350,7 @@ public class SedationController : MonoBehaviour
                 showBlowfishesToggle.transform.parent.gameObject.SetActive(true);
                 startExperienceButton.transform.parent.gameObject.SetActive(true);
                 endExperienceButton.transform.parent.gameObject.SetActive(false);
-                //distractionButton.transform.parent.gameObject.SetActive(false);
+                relocateButton.transform.parent.gameObject.SetActive(false);
                 break;
             case ExperienceConnector.ExperienceStatus.Starting:
             case ExperienceConnector.ExperienceStatus.Started:
@@ -358,7 +358,7 @@ public class SedationController : MonoBehaviour
                 showBlowfishesToggle.transform.parent.gameObject.SetActive(false);
                 startExperienceButton.transform.parent.gameObject.SetActive(false);
                 endExperienceButton.transform.parent.gameObject.SetActive(true);
-                //distractionButton.transform.parent.gameObject.SetActive(true);
+                relocateButton.transform.parent.gameObject.SetActive(true);
                 break;
             case ExperienceConnector.ExperienceStatus.Ending:
             case ExperienceConnector.ExperienceStatus.Ended:
@@ -366,7 +366,7 @@ public class SedationController : MonoBehaviour
                 showBlowfishesToggle.transform.parent.gameObject.SetActive(false);
                 startExperienceButton.transform.parent.gameObject.SetActive(false);
                 endExperienceButton.transform.parent.gameObject.SetActive(false);
-                //distractionButton.transform.parent.gameObject.SetActive(false);
+                relocateButton.transform.parent.gameObject.SetActive(false);
                 break;
         }
     }

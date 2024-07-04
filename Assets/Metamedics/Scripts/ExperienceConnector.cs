@@ -10,8 +10,8 @@ public class ExperienceConnector : MonoBehaviourInstance<ExperienceConnector>
     public event DelegateStartExperience StartExperienceEvent;
     public delegate void DelegateEndExperience();
     public event DelegateEndExperience EndExperienceEvent;
-    public delegate void DelegateDistraction();
-    public event DelegateDistraction DistractionEvent;
+    public delegate void DelegateRelocate();
+    public event DelegateRelocate RelocateEvent;
     public delegate void DelegateStatus(ExperienceStatus n);
     public event DelegateStatus StatusInfo;
 
@@ -46,15 +46,15 @@ public class ExperienceConnector : MonoBehaviourInstance<ExperienceConnector>
         EndExperienceEvent.Invoke();
     }
 
-    public void Distraction()
+    public void Relocate()
     {
-        NetworkManager.GetInstance().RPC(this, nameof(RPCDistraction));
+        NetworkManager.GetInstance().RPC(this, nameof(RPCRelocate));
     }
 
     [PunRPC]
-    protected void RPCDistraction()
+    protected void RPCRelocate()
     {
-        DistractionEvent.Invoke();
+        RelocateEvent.Invoke();
     }
 
     public void Status(ExperienceStatus status)

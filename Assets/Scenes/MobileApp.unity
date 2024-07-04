@@ -3218,7 +3218,7 @@ GameObject:
   - component: {fileID: 802952556}
   - component: {fileID: 802952558}
   m_Layer: 0
-  m_Name: ButtonDistraction
+  m_Name: ButtonRelocate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3403,7 +3403,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1252319010}
         m_TargetAssemblyTypeName: SedationController, Assembly-CSharp
-        m_MethodName: Distraction
+        m_MethodName: Relocate
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3647,7 +3647,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &849977533
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4516,7 +4516,7 @@ GameObject:
   - component: {fileID: 1092201244}
   - component: {fileID: 1092201246}
   m_Layer: 5
-  m_Name: ButtonDistractionParent
+  m_Name: ButtonRelocateParent
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5269,7 +5269,7 @@ MonoBehaviour:
   spanishToggle: {fileID: 764569998}
   englishToggle: {fileID: 1282825151}
   startExperienceButton: {fileID: 161302670}
-  distractionButton: {fileID: 802952558}
+  relocateButton: {fileID: 802952558}
   endExperienceButton: {fileID: 1340677040}
 --- !u!114 &1252319011
 MonoBehaviour:
@@ -6471,7 +6471,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 60, y: 0}
-  m_SizeDelta: {x: 87.375, y: -32}
+  m_SizeDelta: {x: 0, y: -32}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1437348987
 MonoBehaviour:
@@ -7695,7 +7695,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3abe731070fa1884f979daaacf76bf44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  localRoomName: Test_1
+  localRoomName: 
+  debugRoomName: test
 --- !u!114 &1632585091
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8744,7 +8745,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 60, y: 0}
-  m_SizeDelta: {x: 87.375, y: -32}
+  m_SizeDelta: {x: 0, y: -32}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1739310066
 MonoBehaviour:
@@ -8855,7 +8856,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Reproducir sonido
+  m_text: "Reajustar posici\xF3n"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 1f9bca802bf458b479056b53e60e0e9c, type: 2}
   m_sharedMaterial: {fileID: 3745767685404943336, guid: 1f9bca802bf458b479056b53e60e0e9c, type: 2}
